@@ -1,0 +1,61 @@
+# Whisper Learn 8GB Optimized Configuration
+version: "1.0"
+
+memory:
+  total_limit_mb: 7500
+  warning_threshold_mb: 6500
+  critical_threshold_mb: 7000
+  
+models:
+  whisper:
+    default: "medium"
+    realtime: "small"
+    fallback: "base"
+    cache_enabled: true
+    
+  llm:
+    enabled: false  # Set to true if you have 8GB+
+    model: "microsoft/phi-2"
+    quantization: "4bit"
+    max_tokens: 200
+    
+  summarization:
+    enabled: true
+    model: "facebook/bart-large-cnn"
+    extractive_fallback: true
+    
+  embeddings:
+    model: "all-MiniLM-L6-v2"
+    dimension: 384
+
+processing:
+  max_audio_minutes: 60
+  chunk_size_seconds: 30
+  batch_size: 4
+  concurrent_tasks: 2
+  
+features:
+  realtime_transcription: true
+  speaker_diarization: false
+  translation: true
+  slide_alignment: true
+  vector_search: true
+  llm_qa: false  # Enable only if RAM permits
+  
+optimization:
+  use_fp16: true
+  use_quantization: true
+  swap_to_disk: true
+  clear_cache_interval: 300  # seconds
+  
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  rate_limit: 100  # requests per minute
+  
+logging:
+  level: "INFO"
+  file: "logs/app.log"
+  max_size_mb: 100
+  backup_count: 5

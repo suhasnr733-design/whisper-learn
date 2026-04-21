@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    mem_limit: 512m
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - WHISPER_MODEL=medium
+      - USE_LLM=false
+      - USE_SUMMARIZATION=true
+      - MEMORY_LIMIT_MB=7000
+      - REDIS_URL=redis://redis:6379
+    mem_limit: 6g
+    mem_reservation: 4g
+    volumes:
+      - ./models:/models
+      - ./data:/data
+      - ./logs:/logs
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    mem_limit: 1g
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  models:
+  data:
+  logs:
